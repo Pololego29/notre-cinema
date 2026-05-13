@@ -8,7 +8,16 @@ const links = [
   { label: 'À propos', href: '#about' },
 ]
 
-export default function Navbar({ onLogout }) {
+function PlusIcon() {
+  return (
+    <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+
+export default function Navbar({ onLogout, onAddMemory, profile }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -57,7 +66,7 @@ export default function Navbar({ onLogout }) {
           </button>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <button
                 key={link.href}
@@ -69,7 +78,30 @@ export default function Navbar({ onLogout }) {
               </button>
             ))}
 
-            {/* Bouton déconnexion */}
+            {/* Bouton Ajouter */}
+            <button
+              onClick={onAddMemory}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-body text-xs tracking-widest uppercase text-white transition-all duration-200"
+              style={{ background: 'linear-gradient(135deg, #8B0000, #C41E3A)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.12)')}
+              onMouseLeave={(e) => (e.currentTarget.style.filter = '')}
+            >
+              <PlusIcon />
+              Souvenir
+            </button>
+
+            {/* Avatar profil */}
+            {profile && (
+              <div
+                className="w-7 h-7 rounded flex items-center justify-center font-cinematic text-sm text-white select-none"
+                style={{ background: profile.bgGradient, flexShrink: 0 }}
+                title={profile.name}
+              >
+                {profile.initial}
+              </div>
+            )}
+
+            {/* Déconnexion */}
             <button
               onClick={onLogout}
               className="text-white/30 hover:text-crimson text-xs tracking-widest uppercase transition-colors duration-200"
@@ -150,7 +182,32 @@ export default function Navbar({ onLogout }) {
                   {link.label}
                 </motion.button>
               ))}
+
+              <motion.button
+                onClick={() => { setMenuOpen(false); onAddMemory() }}
+                className="flex items-center gap-2 font-body text-sm tracking-widest uppercase text-crimson hover:text-white transition-colors text-left"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <PlusIcon />
+                Ajouter un souvenir
+              </motion.button>
+
               <div style={{ height: 1, background: 'linear-gradient(90deg, rgba(212,175,55,0.3), transparent)' }} />
+
+              {profile && (
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded flex items-center justify-center font-cinematic text-base text-white"
+                    style={{ background: profile.bgGradient }}
+                  >
+                    {profile.initial}
+                  </div>
+                  <span className="font-body text-white/50 text-sm">{profile.name}</span>
+                </div>
+              )}
+
               <button
                 onClick={onLogout}
                 className="text-white/30 text-sm text-left hover:text-crimson transition-colors"

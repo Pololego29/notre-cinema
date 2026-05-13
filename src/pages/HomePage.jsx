@@ -1,13 +1,59 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HeroBanner from '../components/HeroBanner'
 import Carousel from '../components/Carousel'
 import VideoModal from '../components/VideoModal'
-import { featured, categories } from '../data/mockData'
-import { SITE_NAME, SITE_TAGLINE } from '../config'
+import MemoryUploadModal from '../components/MemoryUploadModal'
+import { featured, categories as mockCategories } from '../data/mockData'
+import { SITE_NAME, SITE_TAGLINE, UPLOAD_CATEGORIES } from '../config'
+import { getMemories } from '../lib/storage'
 
-export default function HomePage() {
+const EXTRA_CATEGORY_LABELS = Object.fromEntries(
+  UPLOAD_CATEGORIES.map((c) => [c.id, c.label])
+)
+
+function mergeMemories(mockCats, userMemories) {
+  const merged = mockCats.map((cat) => ({
+    ...cat,
+    memories: [...cat.memories],
+  }))
+
+  const extras = {}
+
+  userMemories.forEach((memory) => {
+    const existing = merged.find((c) => c.id === memory.category)
+    if (existing) {
+      existing.memories.unshift(memory)
+    } else {
+      if (!extras[memory.category]) {
+        extras[memory.category] = {
+          id: memory.category,
+          title: EXTRA_CATEGORY_LABELS[memory.category] || memory.category,
+          emoji: '★',
+          memories: [],
+        }
+      }
+      extras[memory.category].memories.unshift(memory)
+    }
+  })
+
+  return [...merged, ...Object.values(extras)]
+}
+
+export default function HomePage({ uploadOpen, setUploadOpen, profile }) {
   const [selectedMemory, setSelectedMemory] = useState(null)
+  const [userMemories, setUserMemories] = useState([])
+
+  useEffect(() => {
+    setUserMemories(getMemories())
+  }, [])
+
+  const handleUploaded = (newMemory) => {
+    setUserMemories((prev) => [newMemory, ...prev])
+    setUploadOpen(false)
+  }
+
+  const categories = mergeMemories(mockCategories, userMemories)
 
   const openMemory = (memory) => setSelectedMemory(memory)
   const closeMemory = () => setSelectedMemory(null)
@@ -75,10 +121,21 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Modal */}
+      {/* Modal souvenir */}
       <AnimatePresence>
         {selectedMemory && (
           <VideoModal memory={selectedMemory} onClose={closeMemory} />
+        )}
+      </AnimatePresence>
+
+      {/* Modal upload */}
+      <AnimatePresence>
+        {uploadOpen && (
+          <MemoryUploadModal
+            onClose={() => setUploadOpen(false)}
+            onUploaded={handleUploaded}
+            profile={profile}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import IntroAnimation from './components/IntroAnimation'
 import PasswordGate from './components/PasswordGate'
+import ProfileSelect from './components/ProfileSelect'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
 import { SHOW_INTRO } from './config'
@@ -14,6 +15,15 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(() => {
     return localStorage.getItem('nc_auth') === 'true'
   })
+  const [profile, setProfile] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('loveflix_profile')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+  const [uploadOpen, setUploadOpen] = useState(false)
 
   const handleIntroComplete = () => {
     sessionStorage.setItem('nc_intro_shown', 'true')
@@ -27,7 +37,14 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('nc_auth')
+    sessionStorage.removeItem('loveflix_profile')
     setAuthenticated(false)
+    setProfile(null)
+  }
+
+  const handleSelectProfile = (prof) => {
+    sessionStorage.setItem('loveflix_profile', JSON.stringify(prof))
+    setProfile(prof)
   }
 
   if (showIntro) {
@@ -38,10 +55,22 @@ export default function App() {
     return <PasswordGate onAuthenticated={handleAuthenticated} />
   }
 
+  if (!profile) {
+    return <ProfileSelect onSelect={handleSelectProfile} />
+  }
+
   return (
     <>
-      <Navbar onLogout={handleLogout} />
-      <HomePage />
+      <Navbar
+        onLogout={handleLogout}
+        onAddMemory={() => setUploadOpen(true)}
+        profile={profile}
+      />
+      <HomePage
+        uploadOpen={uploadOpen}
+        setUploadOpen={setUploadOpen}
+        profile={profile}
+      />
     </>
   )
 }
