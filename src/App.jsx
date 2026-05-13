@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import IntroAnimation from './components/IntroAnimation'
+import IntroVideo from './components/IntroVideo'
 import PasswordGate from './components/PasswordGate'
 import ProfileSelect from './components/ProfileSelect'
 import Navbar from './components/Navbar'
@@ -10,7 +10,7 @@ import { SHOW_INTRO } from './config'
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => {
     if (!SHOW_INTRO) return false
-    return !sessionStorage.getItem('nc_intro_shown')
+    return !sessionStorage.getItem('loveflix_intro_shown')
   })
   const [authenticated, setAuthenticated] = useState(() => {
     return localStorage.getItem('nc_auth') === 'true'
@@ -24,9 +24,10 @@ export default function App() {
     }
   })
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
 
   const handleIntroComplete = () => {
-    sessionStorage.setItem('nc_intro_shown', 'true')
+    sessionStorage.setItem('loveflix_intro_shown', 'true')
     setShowIntro(false)
   }
 
@@ -47,8 +48,19 @@ export default function App() {
     setProfile(prof)
   }
 
+  const handleChangeProfile = () => {
+    sessionStorage.removeItem('loveflix_profile')
+    setProfile(null)
+    setAccountOpen(false)
+  }
+
+  const handleProfileUpdated = (updated) => {
+    setProfile(updated)
+    sessionStorage.setItem('loveflix_profile', JSON.stringify(updated))
+  }
+
   if (showIntro) {
-    return <IntroAnimation onComplete={handleIntroComplete} />
+    return <IntroVideo onComplete={handleIntroComplete} />
   }
 
   if (!authenticated) {
@@ -64,12 +76,17 @@ export default function App() {
       <Navbar
         onLogout={handleLogout}
         onAddMemory={() => setUploadOpen(true)}
+        onAccount={() => setAccountOpen(true)}
         profile={profile}
       />
       <HomePage
+        profile={profile}
         uploadOpen={uploadOpen}
         setUploadOpen={setUploadOpen}
-        profile={profile}
+        accountOpen={accountOpen}
+        setAccountOpen={setAccountOpen}
+        onChangeProfile={handleChangeProfile}
+        onProfileUpdated={handleProfileUpdated}
       />
     </>
   )

@@ -49,7 +49,7 @@ export default function Carousel({ category, onSelect }) {
       {/* En-tête */}
       <div className="flex items-baseline justify-between px-4 sm:px-6 mb-4 max-w-7xl mx-auto">
         <h2 className="font-cinematic text-xl sm:text-2xl text-white font-normal">
-          <span className="mr-2">{category.emoji}</span>
+          {category.emoji && <span className="mr-2">{category.emoji}</span>}
           {category.title}
         </h2>
         <button className="text-gold text-xs tracking-widest uppercase font-body hover:text-gold-light transition-colors">
